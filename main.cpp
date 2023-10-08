@@ -36,6 +36,7 @@ int getEnv(double& v, const std::string& name) {
 int randint() {
     std::srand(std::time(nullptr));
     int n = std::rand() & 15;
+    n*=3;
     n+=10;
     return n;
 }
@@ -87,7 +88,7 @@ int main(int argc, char* argv[]) {
         printf("\033[38;2;255;0;180m<3\033[0m ");
         std::string prompt = makePrompt(count);
         if (err) printf("%s", prompt.c_str());
-        else r.print2d(prompt);
+        else r.print2d(prompt, 40+count%20-count%13+count%7);
         return 0;
     }
 
@@ -104,8 +105,6 @@ int main(int argc, char* argv[]) {
     exportEnv("RAINBOWPSB", r.c.b);
     exportEnv("RAINBOWPSC", ++count);
     printf(" %c", '\n');
-
-    //export PROMPT_COMMAND="`bashprompt`"
 
     return 0;
 }
