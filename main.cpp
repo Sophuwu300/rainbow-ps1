@@ -1,7 +1,9 @@
 #include <cstdlib>
 #include <string>
 #include <ctime>
+#include <filesystem>
 #include "rainbow.h"
+
 int stoi(const std::string& str, int& i, int mode = 0) {
     int result = 0;
     int mult = 1;
@@ -22,11 +24,11 @@ double stof(const std::string& str) {
 }
 
 void exportEnv(const std::string& name, double value) {
-    printf(" %s=%f", name.c_str(), value);
+    printf(" %s=%lf", name.c_str(), value);
 }
 
 int getEnv(double& v, const std::string& name) {
-    if (char* env = std::getenv(name.c_str())) v = stof(env);
+    if (char* env = std::getenv(name.c_str())) sscanf(env, "%lf", &v);//v = stof(env);
     else return 1;
     return 0;
 }
@@ -38,6 +40,30 @@ int randint() {
     return n;
 }
 
+int getAllEnvs(rainbow& r, int& count){
+    if (char* env = std::getenv("RAINBOWPSC")) {sscanf(env, "%d", &count);}
+    else count = 0;
+    return getEnv(r.s  , "RAINBOWPSS")||getEnv(r.c.r, "RAINBOWPSR")
+    ||getEnv(r.c.g, "RAINBOWPSG")||getEnv(r.c.b, "RAINBOWPSB");
+}
+
+const std::string emotes[] =
+{":)", ":3", "<3",
+":/", ":D", ":(",
+":|", ";)", ":[",
+":P", ":O", ":>"};
+
+
+std::string makePrompt(int& count) {
+    std::srand(std::time(nullptr)*count);
+    std::string path = std::filesystem::current_path();
+    return std::to_string(count).append(" ")
+    .append(emotes[std::rand() % 12]).append(" ")
+    .append(path.substr(path.find_last_of('/')+1)).append("$ ");
+}
+
+
+
 int main(int argc, char* argv[]) {
 
     /*Bash prompt should:
@@ -47,20 +73,39 @@ int main(int argc, char* argv[]) {
         - display in rainbow colors (choose rainbow length with env variable)
     */
 
+    if (argc > 1 && argv[1][0]=='h') {
+        printf("To use this program\n");
+        printf("add the following lines to your .bashrc:\n");
+        printf("export PROMPT_COMMAND='`%s`'\n", argv[0]);
+        printf("PS1='`%s \"!\"`'\n", argv[0]);
+        return 0;
+    }
     rainbow r;
-    if (argc == 2 && argv[1][0] == 's') r.init(15+stio(argv[1]));
-    else if (getEnv(r.s  , "PSRS")||getEnv(r.c.r, "PSRR")
-    ||getEnv(r.c.g, "PSRG")||getEnv(r.c.b, "PSRB")
-    || !(int)r.s || (!(int)r.c.r && !(int)r.c.g && !(int)r.c.b))
+    int count = 0;
+    int err = getAllEnvs(r, count);
+    if (argc > 1 && argv[1][0] == '!') {
+        printf("\033[38;2;255;0;180m<3\033[0m ");
+        std::string prompt = makePrompt(count);
+        if (err) printf("%s", prompt.c_str());
+        else r.print2d(prompt);
+        return 0;
+    }
+
+    int i = 0;
+    if (argc > 1 && argv[1][0] == 's') r.init(15+stoi(argv[1], i));
+    if (err || !(int)r.s || (!(int)r.c.r && !(int)r.c.g && !(int)r.c.b))
         r.init(randint());
     else r.next();
 
     printf("export");
-    exportEnv("PSRS", r.s);
-    exportEnv("PSRR", r.c.r);
-    exportEnv("PSRG", r.c.g);
-    exportEnv("PSRB", r.c.b);
-    printf("%c", '\n');
+    exportEnv("RAINBOWPSS", r.s);
+    exportEnv("RAINBOWPSR", r.c.r);
+    exportEnv("RAINBOWPSG", r.c.g);
+    exportEnv("RAINBOWPSB", r.c.b);
+    exportEnv("RAINBOWPSC", ++count);
+    printf(" %c", '\n');
+
+    //export PROMPT_COMMAND="`bashprompt`"
 
     return 0;
 }
