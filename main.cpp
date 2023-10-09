@@ -60,7 +60,7 @@ std::string makePrompt(int& count) {
     std::string path = std::filesystem::current_path();
     return std::to_string(count).append(" ")
     .append(emotes[std::rand() % 12]).append(" ")
-    .append(path.substr(path.find_last_of('/')+1)).append("$");
+    .append(path.substr(path.find_last_of('/')+1));
 }
 
 
@@ -77,38 +77,36 @@ int main(int argc, char* argv[]) {
         printf("To use this program\n");
         printf("add the following lines to your .bashrc:\n");
         printf("export PROMPT_COMMAND='`%s`'\n", argv[0]);
-        printf("PS1='`%s \"!\"`'\n", argv[0]);
+        printf("PS1=`%s \"!\"`\n", argv[0]);
         return 0;
     }
     rainbow r;
     int count = 0;
     int err = getAllEnvs(r, count);
     if (argc > 1 && argv[1][0] == '!') {
-        std::string outbuff = "\033[38;2;255;0;180m<3\033[0m ";
         std::string prompt = makePrompt(count);
         if (err) {
-            outbuff.append(prompt);
-            printf("%s", outbuff.c_str());
+            printf("%s \\$[] ", prompt.c_str());
             return 0;
         }
+        std::string outbuff = "\\[\\e[38;2;255;0;180m\\]<3\\[\\e[0m\\] ";
         // r.print2d(prompt, 40+count%20-count%13+count%7);
         r.s=5.0*255.0/(double)(40+count%20-count%13+count%7);
         int i = 0;
         for (; i < prompt.length(); i++) {
-            outbuff.append("\033[38;2;")
-            .append(r.c.str()).append("m")
+            outbuff.append("\\[\\e[38;2;")
+            .append(r.c.str()).append("m\\]")
             .append(prompt.substr(i, 1))
-            .append("\033[0m");
+            .append("\\[\\e[0m\\]");
             r.next();
         }
-        outbuff.append(" ");
+        outbuff.append(" \\[\\e[38;2;255;0;180m\\]\\\\$\\[\\e[0m\\] ");
         for (const char* c = outbuff.c_str(); *c; c++) {
             if (*c == 10 || *c == 13 || *c == 0) continue;
             fwrite(c, 1, 1, stdout);
         }
         return 0;
     }
-
     int i = 0;
     if (argc > 1 && argv[1][0] == 's') r.init(15+stoi(argv[1], i));
     if (err || !(int)r.s || (!(int)r.c.r && !(int)r.c.g && !(int)r.c.b))

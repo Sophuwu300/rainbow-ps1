@@ -1,1 +1,0 @@
-$( printf "\\r` bashprompt "!" `\\e7 \\e8" )

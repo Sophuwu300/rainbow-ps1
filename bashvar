@@ -1,0 +1,1 @@
+PROMPT_COMMAND='` bashprompt ` ; PS1=` bashprompt "!" ` '
