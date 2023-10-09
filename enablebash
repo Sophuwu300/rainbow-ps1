@@ -1,0 +1,2 @@
+PS1='\r `bashprompt "!"` \0'
+export PROMPT_COMMAND='`bashprompt`'

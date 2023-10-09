@@ -1,0 +1,1 @@
+`bashprompt "!"`PS1=`bashprompt "!"` $(printf "\e[3X")

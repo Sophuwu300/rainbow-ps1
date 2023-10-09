@@ -60,13 +60,12 @@ std::string makePrompt(int& count) {
     std::string path = std::filesystem::current_path();
     return std::to_string(count).append(" ")
     .append(emotes[std::rand() % 12]).append(" ")
-    .append(path.substr(path.find_last_of('/')+1)).append("$ ");
+    .append(path.substr(path.find_last_of('/')+1)).append("$");
 }
 
 
 
 int main(int argc, char* argv[]) {
-
     /*Bash prompt should:
         - show current folder
         - count how many commands were executed
@@ -85,10 +84,28 @@ int main(int argc, char* argv[]) {
     int count = 0;
     int err = getAllEnvs(r, count);
     if (argc > 1 && argv[1][0] == '!') {
-        printf("\033[38;2;255;0;180m<3\033[0m ");
+        std::string outbuff = "\033[38;2;255;0;180m<3\033[0m ";
         std::string prompt = makePrompt(count);
-        if (err) printf("%s", prompt.c_str());
-        else r.print2d(prompt, 40+count%20-count%13+count%7);
+        if (err) {
+            outbuff.append(prompt);
+            printf("%s", outbuff.c_str());
+            return 0;
+        }
+        // r.print2d(prompt, 40+count%20-count%13+count%7);
+        r.s=5.0*255.0/(double)(40+count%20-count%13+count%7);
+        int i = 0;
+        for (; i < prompt.length(); i++) {
+            outbuff.append("\033[38;2;")
+            .append(r.c.str()).append("m")
+            .append(prompt.substr(i, 1))
+            .append("\033[0m");
+            r.next();
+        }
+        outbuff.append(" ");
+        for (const char* c = outbuff.c_str(); *c; c++) {
+            if (*c == 10 || *c == 13 || *c == 0) continue;
+            fwrite(c, 1, 1, stdout);
+        }
         return 0;
     }
 
@@ -104,7 +121,7 @@ int main(int argc, char* argv[]) {
     exportEnv("RAINBOWPSG", r.c.g);
     exportEnv("RAINBOWPSB", r.c.b);
     exportEnv("RAINBOWPSC", ++count);
-    printf(" %c", '\n');
+    printf("\n");
 
     return 0;
 }
