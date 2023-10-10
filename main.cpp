@@ -28,7 +28,7 @@ void exportEnv(const std::string& name, double value) {
 }
 
 int getEnv(double& v, const std::string& name) {
-    if (char* env = std::getenv(name.c_str())) sscanf(env, "%lf", &v);//v = stof(env);
+    if (char* env = std::getenv(name.c_str())) sscanf(env, "%lf", &v);
     else return 1;
     return 0;
 }
@@ -49,9 +49,9 @@ int getAllEnvs(rainbow& r, int& count){
 }
 
 const std::string emotes[] =
-{":)", ":3", "<3",
-":/", ":D", ":(",
-":|", ";)", ":[",
+{":)", ":3", ";D",
+":]", ":D", "xD",
+";3", ";)", "=)",
 ":P", ":O", ":>"};
 
 
@@ -63,7 +63,20 @@ std::string makePrompt(int& count) {
     .append(path.substr(path.find_last_of('/')+1));
 }
 
-
+void printPrompt(rainbow& r, int& count) {
+    std::string outbuff = "\\[\\e[38;2;255;0;180m\\]<3\\[\\e[0m\\] ";
+    r.s=5.0*255.0/(double)(40+count%20-count%13+count%7);
+    std::string prompt = makePrompt(count);
+    for (int i = 0; i < prompt.length(); i++) {
+        outbuff.append("\\[\\e[38;2;")
+                .append(r.c.str()).append("m\\]")
+                .append(prompt.substr(i, 1))
+                .append("\\[\\e[0m\\]");
+        r.next();
+    }
+    outbuff.append(" \\[\\e[38;2;").append(r.c.str()).append("m\\]\\\\$\\[\\e[0m\\] ");
+    printf("%s", outbuff.c_str());
+}
 
 int main(int argc, char* argv[]) {
     /*Bash prompt should:
@@ -83,43 +96,23 @@ int main(int argc, char* argv[]) {
     rainbow r;
     int count = 0;
     int err = getAllEnvs(r, count);
-    if (argc > 1 && argv[1][0] == '!') {
-        std::string prompt = makePrompt(count);
-        if (err) {
-            printf("%s \\$[] ", prompt.c_str());
-            return 0;
-        }
-        std::string outbuff = "\\[\\e[38;2;255;0;180m\\]<3\\[\\e[0m\\] ";
-        // r.print2d(prompt, 40+count%20-count%13+count%7);
-        r.s=5.0*255.0/(double)(40+count%20-count%13+count%7);
-        int i = 0;
-        for (; i < prompt.length(); i++) {
-            outbuff.append("\\[\\e[38;2;")
-            .append(r.c.str()).append("m\\]")
-            .append(prompt.substr(i, 1))
-            .append("\\[\\e[0m\\]");
-            r.next();
-        }
-        outbuff.append(" \\[\\e[38;2;255;0;180m\\]\\\\$\\[\\e[0m\\] ");
-        for (const char* c = outbuff.c_str(); *c; c++) {
-            if (*c == 10 || *c == 13 || *c == 0) continue;
-            fwrite(c, 1, 1, stdout);
-        }
+    if (err || !(int)r.s || (!(int)r.c.r && !(int)r.c.g && !(int)r.c.b)) r.init(randint());
+    else r.next();
+
+    if (argc > 1 && argv[1][0]=='p') {
+        printPrompt(r, count);
         return 0;
     }
-    int i = 0;
-    if (argc > 1 && argv[1][0] == 's') r.init(15+stoi(argv[1], i));
-    if (err || !(int)r.s || (!(int)r.c.r && !(int)r.c.g && !(int)r.c.b))
-        r.init(randint());
-    else r.next();
 
     printf("export");
     exportEnv("RAINBOWPSS", r.s);
     exportEnv("RAINBOWPSR", r.c.r);
     exportEnv("RAINBOWPSG", r.c.g);
     exportEnv("RAINBOWPSB", r.c.b);
-    exportEnv("RAINBOWPSC", ++count);
+    printf(" RAINBOWPSC=%d", 1+count);
     printf("\n");
+
+
 
     return 0;
 }
