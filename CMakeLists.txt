@@ -1,6 +1,8 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.10)
 project(bashprompt)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(bashprompt main.cpp)
+include_directories(src)
+
+add_executable(bashprompt src/prompt.cpp)
