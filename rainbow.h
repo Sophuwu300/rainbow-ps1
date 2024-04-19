@@ -1,26 +1,12 @@
 /*
  * File: rainbow.h
  * Description: A header file for printing rainbows in C++
- * GitHub: https://github.com/sophuwu300/rainbow.h
- *
  * Creator: Sophuwu <sophie@sophuwu.site>
- *      - discord: sophuwu
- *      - website: https://sophuwu.site https://skisiel.com
- *      - github: Sophuwu300
- *
  * Date: 2023-08-04
- *
- * License: MIT: Must include license if used in project
- *          - Can edit, modify, and redistribute
- *          - Cannot hold liable
- *          - Must include license - this comment block
- *          - Must name creator - Sophuwu
- *
- * Examples and Documentation:
- *     - https://sophuwu.site/rainbow.h
- *     - https://github.com/sophuwu300/rainbow.h
- *
+ * License: MIT
  */
+#ifndef RAINBOW_H
+#define RAINBOW_H 1
 
 #include <stdio.h>
 #include <string>
@@ -99,3 +85,4 @@ struct rainbow {
         }
     }
 };
+#endif

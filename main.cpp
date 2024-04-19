@@ -1,3 +1,10 @@
+/*
+ * File: prompt.cpp
+ * This program is used to generate a bash prompt with rainbow colors.
+ * It can also be used to generate the necessary environment variables
+ *
+ */
+
 #include <cstdlib>
 #include <string>
 #include <ctime>
