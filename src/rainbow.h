@@ -7,8 +7,6 @@
  */
 #ifndef RAINBOW_H
 #define RAINBOW_H 1
-
-#include <stdio.h>
 #include <string>
 
 void panic(std::string s) {

@@ -5,9 +5,6 @@
  *
  */
 
-#include <cstdlib>
-#include <string>
-#include <ctime>
 #include <filesystem>
 #include "rainbow.h"
 
@@ -86,12 +83,6 @@ void printPrompt(rainbow& r, int& count) {
 }
 
 int main(int argc, char* argv[]) {
-    /*Bash prompt should:
-        - show current folder
-        - count how many commands were executed
-        - show random emoticon
-        - display in rainbow colors (choose rainbow length with env variable)
-    */
 
     if (argc > 1 && argv[1][0]=='h') {
         printf("To use this program\n");
@@ -118,8 +109,6 @@ int main(int argc, char* argv[]) {
     exportEnv("RAINBOWPSB", r.c.b);
     printf(" RAINBOWPSC=%d", 1+count);
     printf("\n");
-
-
 
     return 0;
 }
