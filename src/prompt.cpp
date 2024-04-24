@@ -60,17 +60,20 @@ unsigned char unhex(char c) {
 
 int main(int argc, char* argv[]) {
 
+    std::string host = readfile("/etc/hostname");
     char ip[8];
     pipe("hostname -I | awk -F '.' ' { printf(\"%X%X%X%X\",int($1),int($2),int($3),int($4)); } ' ", ip);
     unsigned char ipaddr[4];
     for (int i = 0; i < 4; i++)ipaddr[i] = unhex(ip[2*i])<<4 | unhex(ip[2*i+1]);
-    printf("\033[48;5;%dm \033[0m",ipaddr[0]);
-    printf("\033[48;5;%dm \033[0m",ipaddr[1]);
-    printf("\033[48;5;%dm \033[0m",ipaddr[2]);
-    printf("\033[48;5;%dm \033[0m\n",ipaddr[3]);
+    for (int i = 0; i < host.length(); i++)
+        printf("\033[48;2;%d;%d;%d;38;2;%d;%d;%dm%c",
+               ipaddr[(3-i)%4],ipaddr[(i+1)%4],ipaddr[(2+i)%4],
+               ipaddr[i-1%4],ipaddr[(i-2)%4],ipaddr[3],
+               host[i]);
+    printf("\033[0m\n");
 
 
-    std::string host = readfile("/etc/hostname");
+
     int h, m;
     hm_time(h, m);
     printf("%.2d:%.2d\n", h, m);
