@@ -65,7 +65,7 @@ int main(int argc, char* argv[]) {
     pipe("hostname -I | awk -F '.' ' { printf(\"%X%X%X%X\",int($1),int($2),int($3),int($4)); } ' ", ip);
     unsigned char ipaddr[4];
     for (int i = 0; i < 4; i++)ipaddr[i] = unhex(ip[2*i])<<4 | unhex(ip[2*i+1]);
-    for (int i = 0; i < 4; i++)printf("\033[38;5;%dm%c", ipaddr[i] & 0xFF, hex[ipaddr[i]>>4&0xFF]);
+    for (int i = 0; i < 4; i++)printf("\033[38;5;%dm%c", ipaddr[i] & 0xFF, host[host.length()-4+i]);
     printf("\033[0m\n");
 
 
