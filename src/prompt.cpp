@@ -68,6 +68,9 @@ int main(int argc, char* argv[]) {
     for (int i = 0; i < host.length(); i++)
         printf("\033[38;2;%d;%d;%dm%c",ipaddr[i%3],ipaddr[i+1%3],ipaddr[2+i%3],host[i]);
     printf("\033[0m\n");
+    for (int i = 0; i < 4; i++)
+        printf("\033[48;5;%d;38;5;%dm%c",ipaddr[i],ipaddr[3-i],ip[i*2]);
+    printf("\033[0m\n");
 
 
 
