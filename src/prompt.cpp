@@ -5,7 +5,7 @@
  *
  */
 
-#include <c++/11/string>
+#include <string>
 #include <chrono>
 #include <cstdio>
 #include <ctime>
@@ -66,10 +66,7 @@ int main(int argc, char* argv[]) {
     unsigned char ipaddr[4];
     for (int i = 0; i < 4; i++)ipaddr[i] = unhex(ip[2*i])<<4 | unhex(ip[2*i+1]);
     for (int i = 0; i < host.length(); i++)
-        printf("\033[48;2;%d;%d;%d;38;2;%d;%d;%dm%c",
-               ipaddr[(3-i)%4],ipaddr[(i+1)%4],ipaddr[(2+i)%4],
-               ipaddr[i-1%4],ipaddr[(i-2)%4],ipaddr[3],
-               host[i]);
+        printf("\033[38;2;%d;%d;%dm%c",ipaddr[i%3],ipaddr[i+1%3],ipaddr[2+i%3],host[i]);
     printf("\033[0m\n");
 
 
