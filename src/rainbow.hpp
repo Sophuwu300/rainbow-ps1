@@ -1,21 +1,11 @@
-/*
- * File: rainbow.h
- * Description: A header file for printing rainbows in C++
- * Creator: Sophuwu <sophie@sophuwu.site>
- * Date: 2023-08-04
- * License: MIT
- */
 #ifndef RAINBOW_H
 #define RAINBOW_H 1
-#include <string>
 
-void panic(std::string s) {
-    //fprintf(stderr, "Fatal error: %s\n", s.c_str());
-    exit(1);
-}
+#include <string>
+#include <cstdio>
 
 struct rgb {
-    double r, g, b;
+    int r, g, b;
 
     void clamp() {
         if (r > 255) r = 255; else if (r < 0) r = 0;
@@ -55,16 +45,16 @@ struct rgb {
 
 struct rainbow {
     rgb c;
-    double s = 0; // step
+    int s = 0; // step
 
-    void init(int len) {
-        if (len == 0) panic("Divison by zero.");
+    void init(int len = 10) {
+        if (len == 0) len = 10;
         c.set(255, 0, 0);
-        s = 5.0*255.0 / (double)len;
+        s = 5.0*255.0 / len;
     }
 
     void next() {
-        if (s == 0) panic("Empty infinity loop. Rainbow not initialized.");
+        if (s == 0) return;
         for (int i = 0; i < 3; i++) {
             if ((c[i+1]==0||c[i+1]==255)&&(c[i+2]==0||c[i+2]==255)) {
                 if (c[i+1]==0&&c[i+2]==255) c.indexAdd(i, s);
