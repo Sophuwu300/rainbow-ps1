@@ -47,7 +47,8 @@ std::string readfile(std::string filename){
         b += buffer;
     }
     fclose(file);
-    return b.substr(0, b.size() - 1);
+    if (b.back()=='\n')b.pop_back();
+    return b;
 }
 
 const char *hex="0123456789ABCDEF";
@@ -60,12 +61,24 @@ unsigned char unhex(char c) {
 
 int main(int argc, char* argv[]) {
 
-    std::string host = readfile("/etc/hostname");
+    std::string host = std::string(readfile("/etc/hostname"));
+    std::string user;
+    user=std::string(getenv("USER"));
+    if (host=="soph") {
+        host = "::";
+        if (user == "sophuwu") user = "uwu";
+    }
+
+
     char ip[8];
     pipe("hostname -I | awk -F '.' ' { printf(\"%X%X%X%X\",int($1),int($2),int($3),int($4)); } ' ", ip);
     unsigned char ipaddr[4];
     for (int i = 0; i < 4; i++)ipaddr[i] = unhex(ip[2*i])<<4 | unhex(ip[2*i+1]);
-    for (int i = 0; i < 4; i++)printf("\033[1;38;5;%dm%c", ipaddr[i] , host[i*(host.length()/4)]);
+    printf("\033[1;38;5;%dm%s\033[0m", ipaddr[0], user.c_str());
+    if (ipaddr[0]==192||ipaddr[0]==127||ipaddr[0]==10)printf("\033[38;5;%dm%s\033[0m", ipaddr[1], "@");
+    else printf("\033[38;5;%dm%s\033[0m", ipaddr[1], "@ext.");
+    printf("\033[1;38;5;%dm%s\033[0m", ipaddr[2], host.c_str());
+    printf("\033[1;38;5;%dm%d", ipaddr[3], ipaddr[3]);
     printf("\033[0m\n");
 
 
