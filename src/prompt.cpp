@@ -65,8 +65,8 @@ int main(int argc, char* argv[]) {
     std::string user;
     user=std::string(getenv("USER"));
     if (host=="soph") {
-        host = "::";
-        if (user == "sophuwu") user = "uwu";
+        host = "";
+        if (user == "sophuwu") user = "";
     }
 
 
@@ -75,8 +75,7 @@ int main(int argc, char* argv[]) {
     unsigned char ipaddr[4];
     for (int i = 0; i < 4; i++)ipaddr[i] = unhex(ip[2*i])<<4 | unhex(ip[2*i+1]);
     printf("\033[1;38;5;%dm%s\033[0m", ipaddr[0], user.c_str());
-    if (ipaddr[0]==192||ipaddr[0]==127||ipaddr[0]==10)printf("\033[38;5;%dm%s\033[0m", ipaddr[1], "@");
-    else printf("\033[38;5;%dm%s\033[0m", ipaddr[1], "@ext.");
+    printf("\033[38;5;%dm%s\033[0m", ipaddr[1], "@");
     printf("\033[1;38;5;%dm%s\033[0m", ipaddr[2], host.c_str());
     printf("\033[1;38;5;%dm%d", ipaddr[3], ipaddr[3]);
     printf("\033[0m\n");
