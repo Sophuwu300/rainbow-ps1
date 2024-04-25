@@ -9,20 +9,19 @@
 #include <chrono>
 #include <cstdio>
 #include <ctime>
+#include <sys/ioctl.h>
+#include <unistd.h>
+#include <string_view>
+
 
 const std::string emotes[] =
 {":)", ":3", ";D",":]", ":D", "xD",
 ";3", ";)", "=)",":P", ":O", ":b"};
 
 std::string emote() {
-    srand(time(0));
+    srand(std::chrono::duration_cast<std::chrono::milliseconds>(
+    std::chrono::high_resolution_clock::now().time_since_epoch()).count());
     return emotes[rand() % 12];
-}
-
-std::string padint(int n, int max) {
-    std::string s = std::to_string(n);
-    for(max=std::to_string(max).length();s.length()<max; s="0"+s);
-    return s;
 }
 
 void hm_time(int &h, int &m) {
@@ -51,6 +50,14 @@ std::string readfile(std::string filename){
     return b;
 }
 
+int stoi(std::string s) {
+    int n = 0;
+    for(;!s.empty();s.pop_back()){
+        if(s.back()<'0'||s>'9') continue;
+        s.back()
+    }
+}
+
 const char *hex="0123456789ABCDEF";
 unsigned char unhex(char c) {
     if (c >= '0' && c <= '9') return c - '0';
@@ -61,14 +68,39 @@ unsigned char unhex(char c) {
 
 int main(int argc, char* argv[]) {
 
+    std::string laststat = "";
+    if (argc > 1) {
+         laststat = std::string(argv[1]);
+    }
+    if (laststat.back()=='\n')laststat.pop_back();
+
+    if(getenv("LINENO")==NULL
+    || getenv("USER")==NULL
+    || getenv("PWD")==NULL
+    )    return 1;
+
+    struct winsize size;
+    if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &size) == -1) {
+        return 1;
+    }
+    printf("%d %d\n", size.ws_col, size.ws_row);
+
+    std::string output;
+    output.append(laststat);
+    int lineno = getenv("LINENO");
+    output.append(lineno);
+
+    int h, m;
+    hm_time(h, m);
+    printf("%s %.2d:%.2d ",emote().c_str(), h, m);
+
     std::string host = std::string(readfile("/etc/hostname"));
+    if (host.back()=='\n')host.pop_back();
+
     std::string user;
     user=std::string(getenv("USER"));
-    if (host=="soph") {
-        host = "";
-        if (user == "sophuwu") user = "";
-    }
-
+    if (user.back()=='\n')user.pop_back();
+    if (user == "sophuwu" && lineno>) user = "";
 
     char ip[8];
     pipe("hostname -I | awk -F '.' ' { printf(\"%X%X%X%X\",int($1),int($2),int($3),int($4)); } ' ", ip);
@@ -78,13 +110,10 @@ int main(int argc, char* argv[]) {
     printf("\033[38;5;%dm%s\033[0m", ipaddr[1], "@");
     printf("\033[1;38;5;%dm%s\033[0m", ipaddr[2], host.c_str());
     printf("\033[1;38;5;%dm%d", ipaddr[3], ipaddr[3]);
-    printf("\033[0m\n");
+    printf("\033[0m");
 
-
-    int h, m;
-    hm_time(h, m);
-    printf("%.2d:%.2d\n", h, m);
-    printf("%s %s\n", host.c_str(), emote().c_str());
+    std::string pwd = std::string(getenv("PWD"));
+    printf("%s", pwd.c_str());
 
     return 0;
 }
