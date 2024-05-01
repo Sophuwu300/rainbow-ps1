@@ -11,15 +11,12 @@
 #include <ctime>
 #include <sys/ioctl.h>
 #include <unistd.h>
-#include <string_view>
 
 typedef std::string str;
 
-const std::string emotes[] =
-{":)", ":3", ";D",":]", ":D", "xD",
-";3", ";)", "=)",":P", ":O", ":b"};
+const str emotes[] = {":)", ":3", ";D",":]", ":D", "xD",";3", ";)", "=)",":P", ":O", ":b"};
 
-std::string emote() {
+str emote() {
     srand(std::chrono::duration_cast<std::chrono::milliseconds>(
     std::chrono::high_resolution_clock::now().time_since_epoch()).count());
     return emotes[rand() % 12];
@@ -67,7 +64,10 @@ unsigned char unhex(char c) {
 }
 
 int main(int argc, char* argv[]) {
-    if (getenv("LINENO") == NULL || getenv("USER")==NULL || getenv("PWD")==NULL)return 1;
+    if (getenv("USER") == NULL)system("export USER=$(whoami)");
+    if (getenv("PWD") == NULL)system("export PWD=$(pwd)");
+    if (getenv("LINENO") == NULL)system("export LINENO");
+
     std::string output = "";
     if (argc > 1) output += std::string(argv[1]);
 
