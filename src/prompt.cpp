@@ -13,6 +13,7 @@
 #include <unistd.h>
 #include <string_view>
 
+typedef std::string str;
 
 const std::string emotes[] =
 {":)", ":3", ";D",":]", ":D", "xD",
@@ -24,12 +25,11 @@ std::string emote() {
     return emotes[rand() % 12];
 }
 
-void hm_time(int &h, int &m) {
+str time_hhmm() {
     std::chrono::time_point now = std::chrono::system_clock::now();
     time_t in_time_t = std::chrono::system_clock::to_time_t(now);
     auto tt = std::localtime(&in_time_t);
-    h = (int)(tt->tm_hour);
-    m = (int)(tt->tm_min);
+    return std::to_string((int)(tt->tm_hour)) + ":" + std::to_string((int)(tt->tm_min));
 }
 
 void pipe(std::string inputted, char *bufout) {
@@ -53,12 +53,12 @@ std::string readfile(std::string filename){
 int stoi(std::string s) {
     int n = 0;
     for(;!s.empty();s.pop_back()){
-        if(s.back()<'0'||s>'9') continue;
-        s.back()
+        if( s.back() < '0' || s.back() > '9') continue;
+        //s.back()
     }
+    return n;
 }
 
-const char *hex="0123456789ABCDEF";
 unsigned char unhex(char c) {
     if (c >= '0' && c <= '9') return c - '0';
     if (c >= 'A' && c <= 'F') return c - 'A' + 10;
@@ -67,40 +67,25 @@ unsigned char unhex(char c) {
 }
 
 int main(int argc, char* argv[]) {
+    if (getenv("LINENO") == NULL || getenv("USER")==NULL || getenv("PWD")==NULL)return 1;
+    std::string output = "";
+    if (argc > 1) output += std::string(argv[1]);
 
-    std::string laststat = "";
-    if (argc > 1) {
-         laststat = std::string(argv[1]);
-    }
-    if (laststat.back()=='\n')laststat.pop_back();
+    struct winsize term;
+    if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &term) == -1) return 1;
 
-    if(getenv("LINENO")==NULL
-    || getenv("USER")==NULL
-    || getenv("PWD")==NULL
-    )    return 1;
-
-    struct winsize size;
-    if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &size) == -1) {
-        return 1;
-    }
-    printf("%d %d\n", size.ws_col, size.ws_row);
-
-    std::string output;
-    output.append(laststat);
-    int lineno = getenv("LINENO");
-    output.append(lineno);
-
-    int h, m;
-    hm_time(h, m);
-    printf("%s %.2d:%.2d ",emote().c_str(), h, m);
-
+    output += emote();
+    std::string lineno = getenv("LINENO");
+    output += lineno;
+    output += " ";
+    output += time_hhmm();
+    output += " ";
     std::string host = std::string(readfile("/etc/hostname"));
     if (host.back()=='\n')host.pop_back();
 
     std::string user;
     user=std::string(getenv("USER"));
     if (user.back()=='\n')user.pop_back();
-    if (user == "sophuwu" && lineno>) user = "";
 
     char ip[8];
     pipe("hostname -I | awk -F '.' ' { printf(\"%X%X%X%X\",int($1),int($2),int($3),int($4)); } ' ", ip);
