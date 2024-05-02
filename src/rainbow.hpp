@@ -17,13 +17,10 @@ struct rgb {
         clamp();
         return std::to_string((int)r) + sep + std::to_string((int)g) + sep + std::to_string((int)b);
     }
-
-    void set(double rr, double gg, double bb) {r = rr;g = gg;b = bb; clamp();}
+    void set(int rr, int gg, int bb) {r = rr;g = gg;b = bb; clamp();}
     void set(rgb c) {r = c.r;g = c.g;b = c.b; clamp();}
 
     void print(std::string s) {printf("\033[38;2;%sm%s\033[0m", str().c_str(), s.c_str());}
-    void printAt(std::string s, int x, int y) {printf("\033[%d;%dH\033[38;2;%sm%s\033[0m", y, x, str().c_str(), s.c_str());}
-    void setPx(int x, int y) {printf("\033[%d;%dH\033[48;2;%sm \033[0m", y, x, str().c_str());}
 
     double operator[](int i) {
         switch (i%3) {
@@ -33,7 +30,7 @@ struct rgb {
         }
         return 0;
     }
-    void indexAdd(int i, double v) {
+    void indexAdd(int i, int v) {
         switch (i%3) {
             case 0: r += v; break;
             case 1: g += v; break;
@@ -47,8 +44,8 @@ struct rainbow {
     rgb c;
     int s = 0; // step
 
-    void init(int len = 10) {
-        if (len == 0) len = 10;
+    void init(int len = 15) {
+        if (len <= 0) len = 15;
         c.set(255, 0, 0);
         s = 5.0*255.0 / len;
     }
