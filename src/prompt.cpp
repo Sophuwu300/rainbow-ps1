@@ -26,8 +26,7 @@ int randint(int max) {
 }
 
 const str emotes[] = {":)", ":3", ";D",":]", ":D", "xD",";3", ";)", "=)",":P", ":O", ":b"};
-
-str emote() {
+str emote(){
     return emotes[randint(12)];
 }
 
@@ -74,28 +73,42 @@ str envorcmd(str env, str cmd) {
     return ret;
 }
 
+struct PS1 {
+    str value="";
+    str color(str fg="", str bg="") {
+        if (!fg.empty()) fg = "\\[\\e[38;5;" + fg + "m\\]";
+        if (!bg.empty()) bg = "\\[\\e[48;5;" + bg + "m\\]";
+        return  fg + bg;
+    }
+    void add(str s, str fg="", str bg="") {
+         value+= color(fg, bg) + s + "\\[\\e[0m\\]";
+    }
+    void print() {
+        std::cout << "export PS1='" << value << "';" << std::endl;
+    }
+};
 
 int main(int argc, char* argv[]) {
-    rainbow r;
-
-    try {
-        str rainenv = std::string(getenv("RAINBOW"));
-        for(int i = 0; i < 3; i++) {
-            r.c.indexAdd(i, str2int(rainenv));
-        }
-        r.s = str2int(rainenv);
-        r.next();
-    } catch (std::exception e) {
-        r.init(30-randint(10));
+    //rainbow r;
+    std::cout << "export lineno=$LINENO;" << std::endl;
+    int lineno = 1;
+    if(getenv("lineno")!=NULL) {
+        str ln = std::string(getenv("lineno"));
+        lineno = str2int(ln);
     }
-
-    str output="";
+    PS1 ps1;
     str user = envorcmd("USER", "whoami");
+    if (user == "sophuwu"){
+        user="e===3===3 ==3  =3   ===3 ";
+        user=user.substr((lineno%5)*5, 5);
+    } else user=" "+user;
     str ip = docmd("hostname -I | awk -F '.' ' { for(i=1;i<5;i++){printf(\"%.3d\", $i);}; } ' ");
-    for(int i=0;i<4;i++){
-        output+="\\[\\e[38;5;"+ip.substr((i%4)*3,3)+"m\\]#\\[\\e[0m\\]";
-    }
-    std::cout << output << std::endl;
+    ps1.add("$? ", ip.substr(0,3));
+    str em = emote();
+    ps1.add(em.substr(0,1), ip.substr(3,3));
+    ps1.add(em.substr(1,1), ip.substr(6,3));
+    ps1.add(user, ip.substr(9,3));
+    ps1.print();
     /*str pwd;
     try { pwd = std::string(getenv("PWD")); }
     catch (std::exception e) { pwd = ""; }
