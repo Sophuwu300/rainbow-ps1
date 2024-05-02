@@ -76,9 +76,6 @@ str envorcmd(str env, str cmd) {
 
 
 int main(int argc, char* argv[]) {
-    struct winsize term;
-    if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &term) == -1) return 1;
-
     rainbow r;
 
     try {
@@ -89,16 +86,16 @@ int main(int argc, char* argv[]) {
         r.s = str2int(rainenv);
         r.next();
     } catch (std::exception e) {
-        r.init((int)term.ws_row-10+randint(10));
+        r.init(30-randint(10));
     }
 
     str output="";
     str user = envorcmd("USER", "whoami");
     str ip = docmd("hostname -I | awk -F '.' ' { for(i=1;i<5;i++){printf(\"%.3d\", $i);}; } ' ");
-    for(int i=0;i<user.length();i++){
-        output+="\\e[1;38;5;"+ip.substr((i%4)*3,3)+"m"+user.substr(i,1)+"\\e[0m";
+    for(int i=0;i<4;i++){
+        output+="\\[\\e[38;5;"+ip.substr((i%4)*3,3)+"m\\]#\\[\\e[0m\\]";
     }
-    printf("%s", output.c_str());
+    std::cout << output << std::endl;
     /*str pwd;
     try { pwd = std::string(getenv("PWD")); }
     catch (std::exception e) { pwd = ""; }
