@@ -7,13 +7,13 @@
 
 #include <string>
 #include <chrono>
-#include <cstdio>
 #include <iostream>
 #include <ctime>
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include <vector>
 #include <exception>
+#include <map>
 
 #include "rainbow.hpp"
 
@@ -24,6 +24,9 @@ int randint(int max) {
     std::chrono::high_resolution_clock::now().time_since_epoch()).count());
     return rand() % max;
 }
+
+#define setenv(a) std::cout << #a << "=\"" << a << "\"" << std::endl
+#define exportenv(k,v) std::cout << "export " << k << "=\"" << v << "\"" << std::endl
 
 str mouthlist = ")3>]DPO";
 str eyelist = ";:=";
@@ -51,44 +54,64 @@ str envorcmd(str env, str cmd) {
 int intenv(const char* env) {
     int n=0;
     const char* val = getenv(env);
-    if (val == NULL) return 0;
-    for (int i = 0; val[i] >= '0' && val[i] <= '9'; i++) n = n*10 + (int)(val[i] - '0');
+    if (val == NULL) return -1;
+    for (int i = 0; val[i] >= '0' && val[i] <= '9'; i++) n = n*10 + (int)val[i] - (int)'0';
     return n;
 }
 
-str colorPS(str s, str fg="") {
-    if (!fg.empty()) fg = "\\[\\e[38;5;" + fg + "m\\]";
-    return fg + s + "\\[\\e[0m\\]";
-}
-str colorView(str s, str fg="") {
-    if (!fg.empty()) fg = "\033[38;5;" + fg + "m";
-    return fg + s + "\033[0m";
-}
-str(*color)(str,str) = &colorPS;
+typedef std::pair<str,str> paStr;
+struct escape {
+    paStr PS = paStr("\\[\\e[","m\\]");
+    paStr XT = paStr("\033[","m");
+    str PS1 = "";
+    bool debugON = false;
+    str wrap(str s) { if(debugON)return XT.first+s+XT.second; return PS.first + s + PS.second; }
+    str color(str color,bool background=false) {
+        if (color.length()==0) return "";
+        if (color.length() <= 3)color="5;"+color;
+        else color="2;"+color;
+        if (background) return "48;" + color;
+        return  "38;" + color;
+    }
+    void add(str s, str fg="", str bg="", bool bold=false) {
+        if (bold==1) s = wrap("1") + s;
+        if (fg!="") s = wrap(color(fg)) + s;
+        if (bg!="") s = wrap(color(bg,true)) + s;
+        PS1 += s + wrap("0");
+    }
+    void set() { setenv(PS1); }
+};
 
-int main(int argc, char* argv[]) {
-    if (argc > 1) {
-        str arg = argv[1];
+
+int main(int argc,char** argv) {
+    escape PS1;
+    for (int i=1;i<argc;i++) {
+        str arg = argv[i];
         if (arg == "--help" || arg == "help" || arg == "-h" || arg == "-?") {
-            // Print help message
+            std::cout << "Usage: " << argv[0] << " [view|ps]" << std::endl;
             return 0;
         }
         if (arg == "view") {
-            color = &colorView;
+            PS1.debugON = true;
         }
     }
-    int lineno = intenv("LINENO");
-    if (lineno == 0) std::cout << "export LINENO" << std::endl;
+    rainbow r;
+    r.c.set(intenv("RBP_R"), intenv("RBP_G"), intenv("RBP_B"));
+    r.s = intenv("RBP_S");
+    if (r.s < 1 || (r.c[0]==r.c[1] && r.c[1]==r.c[2]))
+        r.init(15+randint(15));
+    else r.next();
+    for (int i = 0; i < 3; i++) exportenv("RBP_"+str("RGB").substr(i%3,1),r.c[i]);
+    exportenv("RBP_S",r.s);
 
     str user = envorcmd("USER", "whoami");
     while (user.length() % 4 != 0) user += "-";
     int userlen = user.length();
-    user=(user+user).substr((lineno%(userlen)),4);
     str ip = docmd("hostname -I | awk -F '.' ' { for(i=1;i<5;i++){printf(\"%.3d\", $i);}; } ' ");
     for (int i = 0; i < 4; i++) {
-        std::cout << color(user.substr(i,1), ip.substr(i*3,3));
+        PS1.add(user.substr((1+i)%userlen,1), ip.substr(i*3,3));
     }
-    std::cout << std::endl;
+    PS1.set();
 
     /*str pwd;
     try { pwd = std::string(getenv("PWD")); }
