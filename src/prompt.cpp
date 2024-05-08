@@ -63,9 +63,11 @@ int main(int argc, char* argv[]) {
     }
 
     str user = envorcmd("USER", "whoami");
+    while (user.length()%4 != 0) user += " ";
+    int size = user.length()/4;
     str ip = docmd("hostname -I | awk -F '.' ' { for(i=1;i<5;i++){printf(\"%.3d\", $i);}; } ' ");
-    for (int i = 0; i < user.length(); i++) {
-        std::cout << "\033[38;5;" << ip.substr((i%4)*3,3) << "m" << user[i] << "\033[0m";
+    for (int i = 0; i < 4; i++) {
+        std::cout << color(user.substr(i*size,size), ip.substr(i*3,3));
     }
     std::cout << std::endl;
 
