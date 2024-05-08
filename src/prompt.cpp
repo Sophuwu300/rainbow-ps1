@@ -48,10 +48,23 @@ str envorcmd(str env, str cmd) {
     return ret;
 }
 
-str color(str s, str fg="") {
+int intenv(const char* env) {
+    int n=0;
+    const char* val = getenv(env);
+    if (val == NULL) return 0;
+    for (int i = 0; val[i] >= '0' && val[i] <= '9'; i++) n = n*10 + (int)(val[i] - '0');
+    return n;
+}
+
+str colorPS(str s, str fg="") {
     if (!fg.empty()) fg = "\\[\\e[38;5;" + fg + "m\\]";
     return fg + s + "\\[\\e[0m\\]";
 }
+str colorView(str s, str fg="") {
+    if (!fg.empty()) fg = "\033[38;5;" + fg + "m";
+    return fg + s + "\033[0m";
+}
+str(*color)(str,str) = &colorPS;
 
 int main(int argc, char* argv[]) {
     if (argc > 1) {
@@ -60,14 +73,20 @@ int main(int argc, char* argv[]) {
             // Print help message
             return 0;
         }
+        if (arg == "view") {
+            color = &colorView;
+        }
     }
+    int lineno = intenv("LINENO");
+    if (lineno == 0) std::cout << "export LINENO" << std::endl;
 
     str user = envorcmd("USER", "whoami");
-    while (user.length()%4 != 0) user += " ";
-    int size = user.length()/4;
+    while (user.length() % 4 != 0) user += "-";
+    int userlen = user.length();
+    user=(user+user).substr((lineno%(userlen)),4);
     str ip = docmd("hostname -I | awk -F '.' ' { for(i=1;i<5;i++){printf(\"%.3d\", $i);}; } ' ");
     for (int i = 0; i < 4; i++) {
-        std::cout << color(user.substr(i*size,size), ip.substr(i*3,3));
+        std::cout << color(user.substr(i,1), ip.substr(i*3,3));
     }
     std::cout << std::endl;
 
