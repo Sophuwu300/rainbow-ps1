@@ -25,35 +25,10 @@ int randint(int max) {
     return rand() % max;
 }
 
-const str emotes[] = {":)", ":3", ";D",":]", ":D", "xD",";3", ";)", "=)",":P", ":O", ":b"};
+str mouthlist = ")3>]DPO";
+str eyelist = ";:=";
 str emote(){
-    return emotes[randint(12)];
-}
-
-str intpad(int n, int len) {
-    str s = std::to_string(n);
-    while (s.length() < len) s = "0" + s;
-    return s;
-}
-
-int str2int(str &s) {
-    int n = 0;
-    while (!s.empty()) {
-        if (s[0] < '0' || s[0] > '9') {
-            s.erase(0, 1);
-            break;
-        }
-        n = n * 10 + s[0] - '0';
-        s.erase(0, 1);
-    }
-    return n;
-}
-
-str time_hhmm() {
-    std::chrono::time_point now = std::chrono::system_clock::now();
-    time_t in_time_t = std::chrono::system_clock::to_time_t(now);
-    auto tt = std::localtime(&in_time_t);
-    return intpad((int)(tt->tm_hour),2) + ":" + intpad((int)(tt->tm_min),2);
+    return eyelist.substr(randint(eyelist.length()-1),1) + mouthlist.substr(randint(mouthlist.length()-1),1);
 }
 
 str docmd(std::string inputted) {
@@ -73,42 +48,27 @@ str envorcmd(str env, str cmd) {
     return ret;
 }
 
-struct PS1 {
-    str value="";
-    str color(str fg="", str bg="") {
-        if (!fg.empty()) fg = "\\[\\e[38;5;" + fg + "m\\]";
-        if (!bg.empty()) bg = "\\[\\e[48;5;" + bg + "m\\]";
-        return  fg + bg;
-    }
-    void add(str s, str fg="", str bg="") {
-         value+= color(fg, bg) + s + "\\[\\e[0m\\]";
-    }
-    void print() {
-        std::cout << "export PS1='" << value << "';" << std::endl;
-    }
-};
+str color(str s, str fg="") {
+    if (!fg.empty()) fg = "\\[\\e[38;5;" + fg + "m\\]";
+    return fg + s + "\\[\\e[0m\\]";
+}
 
 int main(int argc, char* argv[]) {
-    //rainbow r;
-    std::cout << "export lineno=$LINENO;" << std::endl;
-    int lineno = 1;
-    if(getenv("lineno")!=NULL) {
-        str ln = std::string(getenv("lineno"));
-        lineno = str2int(ln);
+    if (argc > 1) {
+        str arg = argv[1];
+        if (arg == "--help" || arg == "help" || arg == "-h" || arg == "-?") {
+            // Print help message
+            return 0;
+        }
     }
-    PS1 ps1;
+
     str user = envorcmd("USER", "whoami");
-    if (user == "sophuwu"){
-        user="e===3===3 ==3  =3   ===3 ";
-        user=user.substr((lineno%5)*5, 5);
-    } else user=" "+user;
     str ip = docmd("hostname -I | awk -F '.' ' { for(i=1;i<5;i++){printf(\"%.3d\", $i);}; } ' ");
-    ps1.add("$? ", ip.substr(0,3));
-    str em = emote();
-    ps1.add(em.substr(0,1), ip.substr(3,3));
-    ps1.add(em.substr(1,1), ip.substr(6,3));
-    ps1.add(user, ip.substr(9,3));
-    ps1.print();
+    for (int i = 0; i < user.length(); i++) {
+        std::cout << "\033[38;5;" << ip.substr((i%4)*3,3) << "m" << user[i] << "\033[0m";
+    }
+    std::cout << std::endl;
+
     /*str pwd;
     try { pwd = std::string(getenv("PWD")); }
     catch (std::exception e) { pwd = ""; }
