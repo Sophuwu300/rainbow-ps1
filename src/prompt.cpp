@@ -14,6 +14,7 @@
 #include <vector>
 #include <exception>
 #include <map>
+#include <cmath>
 
 #include "rainbow.hpp"
 
@@ -59,11 +60,20 @@ int intenv(const char* env) {
     return n;
 }
 
+str time_ddd_hh_mm() {
+    //strftime(buffer, 80, "%a %H:%M", now);
+    time_t t = time(0);
+    struct tm * now = localtime(&t);
+    char buffer[80];
+    strftime(buffer, 80, "%a %H:%M %Z", now);
+    return str(buffer);
+}
+
 typedef std::pair<str,str> paStr;
 struct escape {
     paStr PS = paStr("\\[\\e[","m\\]");
     paStr XT = paStr("\033[","m");
-    str PS1 = "";
+    str output = "";
     bool debugON = false;
     str wrap(str s) { if(debugON)return XT.first+s+XT.second; return PS.first + s + PS.second; }
     str color(str color,bool background=false) {
@@ -77,11 +87,18 @@ struct escape {
         if (bold==1) s = wrap("1") + s;
         if (fg!="") s = wrap(color(fg)) + s;
         if (bg!="") s = wrap(color(bg,true)) + s;
-        PS1 += s + wrap("0");
+        output += s + wrap("0");
     }
-    void set() { setenv(PS1); }
+    void rainbow(rainbow &r, str s) {
+        for (int i = 0; i < s.length(); i++) {
+            add(s.substr(i,1), r.c.str());
+            r.next();
+        }
+    }
+    void set() { exportenv("PS1",output); }
 };
 
+int wave(int x) {return (int)(6+1.54*3.14159*(sin(x/(3.14159))));}
 
 int main(int argc,char** argv) {
     escape PS1;
@@ -95,22 +112,34 @@ int main(int argc,char** argv) {
             PS1.debugON = true;
         }
     }
+    int lineno = intenv("RBP_N")+1;
     rainbow r;
     r.c.set(intenv("RBP_R"), intenv("RBP_G"), intenv("RBP_B"));
     r.s = intenv("RBP_S");
     if (r.s < 1 || (r.c[0]==r.c[1] && r.c[1]==r.c[2]))
-        r.init(15+randint(15));
+        r.init(25-randint(15));
     else r.next();
-    for (int i = 0; i < 3; i++) exportenv("RBP_"+str("RGB").substr(i%3,1),r.c[i]);
-    exportenv("RBP_S",r.s);
-
-    str user = envorcmd("USER", "whoami");
-    while (user.length() % 4 != 0) user += "-";
-    int userlen = user.length();
-    str ip = docmd("hostname -I | awk -F '.' ' { for(i=1;i<5;i++){printf(\"%.3d\", $i);}; } ' ");
-    for (int i = 0; i < 4; i++) {
-        PS1.add(user.substr((1+i)%userlen,1), ip.substr(i*3,3));
+    if (!PS1.debugON) {
+        for (int i = 0; i < 3; i++) exportenv("RBP_" + str("RGB").substr(i % 3, 1), r.c[i]);
+        exportenv("RBP_S", r.s);
+        exportenv("RBP_N", lineno);
     }
+    for(int i = 0; i < abs(wave(lineno)); i++) {
+        r.next();
+    }
+
+    std::vector<str> host;
+    host.push_back(envorcmd("HOSTNAME","hostname"));
+    host.push_back(envorcmd("USER","whoami"));
+    str ip = docmd("hostname -I | awk -F '.' ' { for(i=1;i<5;i++){printf(\"%.3d\", $i);}; } ' ");
+    PS1.add("$?", "190;180;30");
+    PS1.add("|", "100;100;100");
+    PS1.add(time_ddd_hh_mm(),ip.substr(3*((1+lineno)%4),3));
+    PS1.add("|","100;100;100");
+    PS1.rainbow(r, std::to_string(lineno));
+    PS1.add(" ");
+    PS1.rainbow(r, emote());
+    PS1.add(" ");
     PS1.set();
 
     /*str pwd;
