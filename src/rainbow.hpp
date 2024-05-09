@@ -22,7 +22,7 @@ struct rgb {
 
     void print(std::string s) {printf("\033[38;2;%sm%s\033[0m", str().c_str(), s.c_str());}
 
-    double operator[](int i) {
+    int operator[](int i) {
         switch (i%3) {
             case 0: return r;
             case 1: return g;
