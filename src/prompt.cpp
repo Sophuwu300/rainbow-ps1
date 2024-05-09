@@ -170,9 +170,9 @@ int main(int argc,char** argv) {
         st[i] = " " + st[i] + " ";
     }
     str ip = docmd("hostname -I | awk -F '.' ' { for(i=1;i<5;i++){printf(\"%.3d\", $i);}; } ' ");
-    PS1.add("\\$?", "190;180;30");
+    PS1.add("\\$? ", "190;180;30");
     PS1.add(emote(), std::to_string(randint(214)+30));
-    PS1.add("|", "150;150;150");
+    PS1.add(" |", "150;150;150");
     str s = std::string(st[lineno%st.size()]);
     int s_len = (s.length()/4);
     if (s.length()%2==0) s_len++;
@@ -196,11 +196,5 @@ int main(int argc,char** argv) {
     PS1.add(" ");
     PS1.set();
 
-    /*str pwd;
-    try { pwd = std::string(getenv("PWD")); }
-    catch (std::exception e) { pwd = ""; }
-    if (user.back()=='\n')user.pop_back();
-    output += " ";
-    output += pwd;*/
     return 0;
 }
