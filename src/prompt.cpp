@@ -6,30 +6,17 @@
  */
 
 #include <string>
-#include <chrono>
-#include <iostream>
-#include <ctime>
-#include <sys/ioctl.h>
-#include <unistd.h>
+#include <cstdio>
 #include <vector>
-#include <exception>
-#include <map>
-#include <cmath>
-#include <sys/sysinfo.h>
-#include <filesystem>
+#include <cmath> // for sin
 
 #include "rainbow.hpp"
 
 typedef std::string str;
 
-int randint(int max) {
-    srand(std::chrono::duration_cast<std::chrono::nanoseconds>(
-    std::chrono::high_resolution_clock::now().time_since_epoch()).count());
-    return rand() % max;
-}
+void exportenv(str k, str v) {printf("export %s=\"%s\"\n", k.c_str(), v.c_str());}
 
-#define setenv(a) std::cout << #a << "=\"" << a << "\"" << std::endl
-#define exportenv(k,v) std::cout << "export " << k << "=\"" << v << "\"" << std::endl
+int randint(int n) {return rand()%n;}
 
 str mouthlist = ")3>]DPO";
 str eyelist = ";:=";
@@ -66,14 +53,6 @@ int intenv(const char* env) {
     if (val == NULL) return n;
     atoi(n, val);
     return n;
-}
-
-str time_hh_mm() {
-    time_t t = time(0);
-    struct tm * now = localtime(&t);
-    char buffer[80];
-    int n = strftime(buffer, 80, "%H:%M", now);
-    return str(buffer, n);
 }
 
 typedef std::pair<str,str> paStr;
@@ -142,12 +121,22 @@ std::vector<str> split(str s, char delim) {
     return ret;
 }
 
+str hex = "0123456789ABCDEF";
+str tohex(int n) {
+    str ret = "";
+    for (int i = 0; i < 2; i++) {
+        ret = hex[n%16] + ret;
+        n /= 16;
+    }
+    return ret;
+}
+
 int main(int argc,char** argv) {
     escape PS1;
     for (int i=1;i<argc;i++) {
         str arg = argv[i];
         if (arg == "--help" || arg == "help" || arg == "-h" || arg == "-?") {
-            std::cout << "PROMPT_COMMAND='eval \"$(" << argv[0] << ")\"'" << std::endl;
+            printf("PROMPT_COMMAND='eval \"$(%s)\"'\n",argv[0]);
             return 0;
         }
         if (arg == "view") {
@@ -155,13 +144,27 @@ int main(int argc,char** argv) {
         }
     }
     int lineno = intenv("LINENO");
-    if (lineno == 0)std::cout << "export LINENO COLUMNS LINES ";
+    if (lineno == 0)printf("%s\n","export LINENO COLUMNS LINES ");
     PS1.r = rain(lineno);
+    srand((unsigned int)(intenv("RANDOM")+lineno));
 
     std::vector<str> st;
     st.push_back(envorcmd("USER","whoami"));
     st.push_back(envorcmd("HOSTNAME","hostname"));
-    st.push_back(time_hh_mm());
+    st.push_back(docmd("date +'%T'"));
+    st.push_back(docmd("free -m | awk '/Mem/ {printf(\"%.2f/%.0fG\\n\", $3/1000, $2/1000);}'"));
+    int ipn[4] = {0,0,0,0};
+    str ip = docmd("hostname -i");
+    int j = 0;
+    for (int i = 0; i < 4; i++) {
+        j = atoi(ipn[i],ip.c_str(),j)+1;
+    }
+    ip="";
+    for (int i = 0; i < 4; i++) {
+        ip += tohex(ipn[i]);
+    }
+    st.push_back(ip);
+
     int len = 0;
     for (int i = 0; i < st.size(); i++)if (st[i].length()>len) len = st[i].length();
 
@@ -169,14 +172,14 @@ int main(int argc,char** argv) {
         while (st[i].length() < len) st[i] = " "+st[i];
         st[i] = " " + st[i] + " ";
     }
-    str ip = docmd("hostname -I | awk -F '.' ' { for(i=1;i<5;i++){printf(\"%.3d\", $i);}; } ' ");
-    PS1.add("\\$? ", "190;180;30");
+    PS1.add("\\${?#0} ", "190;180;30");
     PS1.add(emote(), std::to_string(randint(214)+30));
     PS1.add(" |", "150;150;150");
     str s = std::string(st[lineno%st.size()]);
     int s_len = (s.length()/4);
     if (s.length()%2==0) s_len++;
-    for (int i = 0; i<4; i++) PS1.add(s.substr(i*s_len,s_len),ip.substr(3*((i+lineno)%4),3));
+    for (int i = 0; i<4; i++) PS1.add(s.substr(i*s_len,s_len),std::to_string(ipn[i%4]));
+    //for (int i = 0; i<s.length();i++) PS1.add(s.substr(i,1),std::to_string(ipn[i%4]));
     PS1.add("| ","150;150;150");
     PS1.rain(std::to_string(lineno));
     PS1.add(" ");
