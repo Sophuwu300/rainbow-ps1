@@ -4,7 +4,6 @@
  * It can also be used to generate the necessary environment variables
  *
  */
-
 #include "common.hpp"
 #include "ip.hpp"
 #include "rainbow.hpp"
@@ -46,7 +45,7 @@ struct escape {
     void set() { exportenv("PS1",output); }
 };
 
-int wave(int x) {return (int)(6+1.54*3.14159*(sin(x/(3.14159))));}
+int wave(int x) {return (int)(3+3*(sin(x/1.4)));}
 
 rainbow rain(int wavefactor=6) {
     rainbow r;
@@ -68,7 +67,6 @@ str getpwd() {
     if (pwd.back()=='\n')pwd.pop_back();
     return pwd;
 }
-
 
 
 int main(int argc,char** argv) {
@@ -97,18 +95,27 @@ int main(int argc,char** argv) {
     IP ip;
     ip.fromCmd();
 
-    if (lineno%10==0) PS1.output+=ip.toColor();
-    else PS1.add("<3", "255;0;200");
-    PS1.add(" ");
+    str user = envorcmd("USER", "whoami");
+    if (user.length()==0 || user=="sophuwu") user=" ";
+    else user = " "+user+" ";
+
+    PS1.output+=ip.toColor();
+    PS1.add("|", "99");
     PS1.add("\\${?}", "202");
-    PS1.add(" ");
+    PS1.rain(user);
     PS1.rain(std::to_string(lineno));
     PS1.add(" ");
     PS1.rain(emote());
     str pwd = getpwd();
-    std::vector<str> dirs = split(pwd,'/');
-    size_t a = pwd.find_last_of("/");
-    pwd
+    if (pwd.back()=='/')pwd.pop_back();
+    std::vector<str> parts = split(pwd, '/');
+    str base="";
+    for (int i = 0; parts.size()!=0 && i<2; i++) {
+        base = " " + parts.back() + base;
+        parts.pop_back();
+    }
+    if (base.length()==0) base = "/";
+    PS1.rain(base);
     PS1.add(" ");
     PS1.rain("$");
     PS1.add(" ");

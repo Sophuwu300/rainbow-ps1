@@ -20,8 +20,8 @@ struct IP {
     }
     str toColor() {
         str ret = "";
-        ret+= color2(values[0], values[1]);
-        ret+= color2(values[2], values[3]);
+        ret+= color2(int2col(values[0]), int2col(values[1]));
+        ret+= color2(int2col(values[2]), int2col(values[3]));
         return ret;
     }
 };

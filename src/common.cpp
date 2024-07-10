@@ -63,7 +63,7 @@ int int2col(int n) {
     if (n>255||n<0) return 0;
     int col = 0;
     char* env = getenv("IPCOLOR");
-    if (env != NULL && str(env)=="alt") col=16;
+    if (env != NULL) col=16;
     n=(n*(216+col)/256)+(16-col);
     return n;
 }
