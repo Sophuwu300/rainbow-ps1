@@ -84,6 +84,6 @@ str color2(int top, int bot) {
     ret += std::to_string(top);
     ret += ";38;5;" + std::to_string(bot);
     ret = wrap(ret);
-    ret+="▌"; // "▌" "▀" "▄"
+    ret+="▄"; // "▌" "▀" "▄" "▌"
     return ret+wrap("0");
 }

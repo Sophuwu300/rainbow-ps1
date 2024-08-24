@@ -1,7 +1,8 @@
-build: src/*.cpp
+defualt: bashprompt
+
+bashprompt: src/
 	mkdir -p build
 	g++ -std=c++17 -o build/bashprompt src/*.cpp
-run:
-	./build/bashprompt
+
 clean:
 	@echo "unimplemented"
