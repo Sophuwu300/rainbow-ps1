@@ -11,7 +11,22 @@
 
 void exportenv(str k, str v) {printf("export %s=\"%s\"\n", k.c_str(), v.c_str());}
 
-int randint(int n) {return rand()%n;}
+int randint(int n) {
+    if (n<=0) return 0;
+    FILE *f = fopen("/dev/urandom", "r");
+    if (f == NULL) return 0;
+    unsigned char buf;
+    unsigned int ret = 0;
+    for (int i = 0; i < 4; i++) {
+        ret<<=8;
+        fread(&buf, 1, 1, f);
+        ret += buf;
+    }
+    //fread(&buf, 1, 4, f);
+    fclose(f);
+    ret = ret % n;
+    return (int)ret;
+}
 
 str mouthlist = ")3>]DPO";
 str eyelist = ";:=";
@@ -50,7 +65,7 @@ int wave(int x) {return (int)(3+3*(sin(x/1.4)));}
 rainbow rain(int wavefactor=6) {
     rainbow r;
     const char* rainenv = getenv("RAINBOW");
-    if (rainenv == NULL)r.init(25-randint(15));
+    if (rainenv == NULL)r.init(35 - randint(10));
     else {
         atoi(r.s, rainenv, atoi(r.c.b, rainenv, atoi(r.c.g, rainenv,atoi(r.c.r, rainenv, 0)+1)+1)+1);
         r.next();
@@ -88,23 +103,23 @@ int main(int argc,char** argv) {
         }
     }
     int lineno = intenv("LINENO");
-    if (lineno == 0)printf("%s\n","export LINENO COLUMNS LINES ");
+    if (lineno == 0)printf("%s\n","export LINENO");
     PS1.r = rain(lineno);
-    srand((unsigned int)(intenv("RANDOM")+lineno));
 
-    IP ip;
-    ip.fromCmd();
+    str user=" ";
+    const char* ipcol = getenv("IPCOLOR");
+    if (ipcol == NULL || !(std::string(ipcol)=="none"||std::string(ipcol)=="NONE")) {
+        IP ip;
+        ip.fromCmd();
+        user = envorcmd("USER", "whoami");
+        user = " " + user + " ";
+        PS1.output+=ip.toColor()+" ";
+    }
 
-    str user = envorcmd("USER", "whoami");
-    if (user.length()==0 || user=="sophuwu") user=" ";
-    else user = " "+user+" ";
 
-    PS1.output+=ip.toColor();
-    PS1.add("|", "99");
     PS1.add("\\${?}", "202");
     PS1.rain(user);
-    PS1.rain(std::to_string(lineno));
-    PS1.add(" ");
+    PS1.rain(std::to_string(lineno)+" ");
     PS1.rain(emote());
     str pwd = getpwd();
     if (pwd.back()=='/')pwd.pop_back();
@@ -116,9 +131,7 @@ int main(int argc,char** argv) {
     }
     if (base.length()==0) base = "/";
     PS1.rain(base);
-    PS1.add(" ");
-    PS1.rain("$");
-    PS1.add(" ");
+    PS1.rain(" $ ");
     PS1.set();
 
     return 0;

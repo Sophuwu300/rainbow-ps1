@@ -49,35 +49,17 @@ std::vector<str> split(str s, char delim) {
     ret.push_back(temp);
     return ret;
 }
-str hex = "0123456789ABCDEF";
-str tohex(int n) {
-    str ret = "";
-    for (int i = 0; i < 2; i++) {
-        ret = hex[n%16] + ret;
-        n /= 16;
-    }
-    return ret;
-}
 
 int int2col(int n) {
     if (n>255||n<0) return 0;
     int col = 0;
-    char* env = getenv("IPCOLOR");
-    if (env != NULL) col=16;
+    const char* env = getenv("IPCOLOR");
+    if (env != NULL && (std::string(env)=="alt"||std::string(env)=="ALT"))
+        col=16;
     n=(n*(216+col)/256)+(16-col);
     return n;
 }
 
-int avg(int a[], int n) {
-    int sum = 0;
-    for (int i = 0; i < n; i++) sum += a[i];
-    return sum/n;
-}
-
-int map10(char a) {
-    int x = a-'0';
-    return 36*(5*x/10)+6*(5*(10-x)/10)+16;
-}
 
 str color2(int top, int bot) {
     str ret = "48;5;";
