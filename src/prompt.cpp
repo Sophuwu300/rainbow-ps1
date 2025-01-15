@@ -125,6 +125,7 @@ int main(int argc,char** argv) {
     if (pwd.back()=='/')pwd.pop_back();
     std::vector<str> parts = split(pwd, '/');
     str base="";
+    parts[0] = "/"+parts[0];
     for (int i = 0; parts.size()!=0 && i<2; i++) {
         base = " " + parts.back() + base;
         parts.pop_back();
