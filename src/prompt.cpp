@@ -97,8 +97,8 @@ int main(int argc,char** argv) {
         }
         if (arg=="ip") {
             IP ip;
-            ip.fromCmd();
-            printf("%s\n",ip.toColor().c_str());
+            if (ip.get()==0)return 1;
+            printf("%s\n%s\n",ip.toString().c_str(),ip.toColor().c_str());
             return 0;
         }
     }
@@ -110,10 +110,10 @@ int main(int argc,char** argv) {
     const char* ipcol = getenv("IPCOLOR");
     if (ipcol == NULL || !(std::string(ipcol)=="none"||std::string(ipcol)=="NONE")) {
         IP ip;
-        ip.fromCmd();
+        int ok = ip.get();
         user = envorcmd("USER", "whoami");
         user = " " + user + " ";
-        PS1.output+=ip.toColor()+" ";
+        if (ok) PS1.output+=ip.toColor()+" ";
     }
 
 

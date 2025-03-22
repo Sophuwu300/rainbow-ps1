@@ -18,7 +18,7 @@ extern paStr DBG;
 extern paStr* esc;
 extern str wrap(str s);
 
-extern str docmd(std::string inputted);
+extern str docmd(const char* inputted);
 extern str envorcmd(str env, str cmd);
 extern int atoi(int &n, const char *c, int i);
 extern int intenv(const char* env);

@@ -6,8 +6,8 @@ paStr DBG = {"\033[","m"};
 paStr* esc = &PRT;
 str wrap(str s) {return esc->s + s + esc->e;}
 
-str docmd(std::string inputted) {
-    FILE* file = popen(inputted.c_str(), "r");
+str docmd(const char* inputted) {
+    FILE* file = popen(inputted, "r");
     char buff[1024];
     int n = fread(buff, 1, sizeof(buff), file);
     pclose(file);
@@ -19,7 +19,7 @@ str docmd(std::string inputted) {
 str envorcmd(str env, str cmd) {
     str ret = "";
     try { ret = std::string(getenv(env.c_str())); }
-    catch (std::exception e) { ret = docmd(cmd); }
+    catch (std::exception e) { ret = docmd(cmd.c_str()); }
     return ret;
 }
 
@@ -28,6 +28,7 @@ int atoi(int &n, const char *c, int i=0){
     for (; c[i] >= '0' && c[i] <= '9'; i++) n = n*10 + (int)c[i] - (int)'0';
     return i;
 }
+
 
 int intenv(const char* env) {
     int n=0;
