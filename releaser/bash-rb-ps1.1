@@ -1,0 +1,66 @@
+.TH BASH-RB-PS1 1 "{{ Version }}" "Version {{ Version }}" "User Commands"
+.SH NAME
+.B bash-rb-ps1
+\- rainbow PS1 prompt generator for bash
+
+.SH SYNOPSIS
+.B bash-rb-ps1
+[\fIoption\fR]
+
+.SH DESCRIPTION
+.B bash-rb-ps1
+is an executable binary which generates environment variables that bash can evaluate to put a rainbow-colored prompt in the terminal. It also displays IP as a block of 4 colours.
+.SH OPTIONS
+.TP
+.B help
+Prints the command to run in your shell to enable the rainbow prompt.
+.TP
+.B view
+Print the PS1 with xterm color codes, without PS1 syntax. This is used to preview the prompt before enabling it.
+.SH ENVIRONMENT
+.TP
+.B IPCOLOR
+changes the color palette used for the IP address.
+    If set to `alt`, it uses an alternative color palette.
+    If set to `none`, the IP address block and username will be removed from the prompt.
+    If unset or set to any other value, the default color palette will be used.
+.TP
+.B IPCmd
+specifies a custom command to retrieve the current IP address.
+    If set, it overrides the default command used by bash-rb-ps1.
+    The command should output an IPv4 address at the beginning of its output.
+    Anything after the first space or newline in the output is ignored.
+    If unset, it defaults to `hostname -i`.
+.TP
+.B IPStr
+manually sets the IPv4 address to a specific value.
+    If set, the IPCmd will not be executed, and the value of IPStr will be used instead.
+
+.SH EXAMPLES
+.TP
+To enable the rainbow prompt, run:
+.B    eval $(bash-rb-ps1 help)
+.TP
+To view the prompt without enabling it, run:
+.B    bash-rb-ps1 view
+.TP
+To set a custom command for the IP address, run:
+.B    export IPCmd="my-custom-ip-command"
+.TP
+To set a specific IP address manually, run:
+.B    export IPStr="192.168.69.42"
+.TP
+To use an alternative color palette for the IP address, run:
+.B    export IPCOLOR=alt
+.TP
+To disable the IP address block and username from the prompt, run:
+.B    export IPCOLOR=none
+.TP
+To reset the IP address color palette to the default, unset the IPCOLOR variable:
+.B    unset IPCOLOR
+.SH SEE ALSO
+.BR bash (1)
+.SH AUTHOR
+Sophie Kisiel <sophie@sophuwu.com>
+.SH GIT
+https://git.sophuwu.com/bashprompt

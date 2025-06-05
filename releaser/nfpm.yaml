@@ -1,0 +1,26 @@
+name: "bash-rb-ps1"
+arch: "{{ Target }}"
+platform: "linux"
+version: "{{ Version }}"
+section: "default"
+priority: "extra"
+replaces:
+provides:
+depends:
+recommends:
+suggests:
+conflicts:
+maintainer: "sophuwu <sophie@sophuwu.com>"
+description: |
+   sophps is a an extension for bash that genrates rainbow PS1
+   it also displays IP as a block of 4 colours.
+vendor: "cdn.sophuwu.com"
+homepage: "https://git.sophuwu.com/bashprompt"
+license: "MIT"
+changelog: ""
+contents:
+- src: ./bash-rb-ps1
+  dst: /usr/bin/bash-rb-ps1
+- src: ../bash-rb-ps1.1
+  dst: /usr/share/man/man1/bash-rb-ps1.1
+overrides:
