@@ -19,6 +19,13 @@ Prints the command to run in your shell to enable the rainbow prompt.
 Print the PS1 with xterm color codes, without PS1 syntax. This is used to preview the prompt before enabling it.
 .SH ENVIRONMENT
 .TP
+.B PWDLEN
+sets the number of parents shown in PWD.
+    0 will show the full path.
+    1 will show only the current directory name.
+    2 will show the current directory and its parent, and so on.
+    If unset, it defaults to 2.
+.TP
 .B IPCOLOR
 changes the color palette used for the IP address.
     If set to `alt`, it uses an alternative color palette.

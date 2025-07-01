@@ -10,6 +10,8 @@
 struct IP {
     int values[4];
     int fromString(str s) {
+        // anything shorter than 0.0.0.0 cannot be valid
+        if (s.length() < 7) return 0;
         int pos = 0;
         int c = 0;
         for (int i=0;i<4;i++) {
@@ -30,20 +32,23 @@ struct IP {
         return 1;
     }
     int fromEnv() {
-        const char * env = getenv("IPStr");
-        if (env != NULL) return fromString(std::string(env));
+        str v;
+        if (strEnv(v, "IPStr")) return fromString(v);
         return 0;
     }
     int fromCmd() {
-        str s;
-        const char * env = getenv("IPCmd");
-        if (env != NULL && fromString(docmd(env).c_str())) return 1;
-        return fromString(docmd("hostname -i").c_str());
+        str s = "hostname -I";
+        strEnv(s, "IPCmd");
+        if (fromString(docmd(s.c_str()))) exportenv("IPStr", toString());
+        return fromString(s);
     }
     int get() {
-        int ok = fromEnv();
-        if (!ok)ok = fromCmd();
-        return ok;
+        if (fromEnv()) return 1;
+        if (fromCmd()) {
+            exportenv("IPStr", toString());
+            return 1;
+        }
+        return 0;
     }
     str toColor() {
         str ret = "";

@@ -11,6 +11,7 @@
 #include <vector>
 #include <string>
 typedef std::string str;
+typedef const char* cstr;
 
 struct paStr {str s, e;};
 extern paStr PRT;
@@ -18,10 +19,13 @@ extern paStr DBG;
 extern paStr* esc;
 extern str wrap(str s);
 
-extern str docmd(const char* inputted);
-extern str envorcmd(str env, str cmd);
+extern void exportenv(str k, str v);
+extern int strEnv(str &dst, cstr env);
+extern str docmd(str inp);
+extern str envorcmd(cstr env, cstr cmd);
 extern int atoi(int &n, const char *c, int i);
-extern int intenv(const char* env);
+extern int intenv(int &n, cstr env);
+extern int intenv(cstr env);
 extern std::vector<str> split(str s, char delim);
 
 extern int int2col(int n);

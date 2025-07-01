@@ -8,9 +8,6 @@
 #include "ip.hpp"
 #include "rainbow.hpp"
 
-
-void exportenv(str k, str v) {printf("export %s=\"%s\"\n", k.c_str(), v.c_str());}
-
 int randint(int n) {
     if (n<=0) return 0;
     FILE *f = fopen("/dev/urandom", "r");
@@ -75,16 +72,48 @@ rainbow rain(int wavefactor=6) {
     return r;
 }
 
-str getpwd() {
-    str pwd;
-    try { pwd = std::string(getenv("PWD")); }
-    catch (std::exception e) { pwd = ""; }
-    if (pwd.back()=='\n')pwd.pop_back();
-    return pwd;
+void getpwd(escape &esc) {
+    str pwd, home;
+    if (!strEnv(pwd, "PWD")) return;
+    strEnv(home, "HOME");
+    int inHome = 0;
+    if (!home.empty() && pwd.length() >= home.length() && pwd.substr(0, home.length()) == home) {
+        pwd = pwd.substr(home.length());
+        inHome = 1;
+    }
+    std::vector<str> parts = split(pwd, '/');
+
+
+    int n = 2;
+    int siz = parts.size();
+    intenv(n, "PWDLEN");
+    pwd="..";
+    if (n <= 0 || n >= siz) {
+        n = 0;
+        if (inHome) pwd="~";
+        else pwd="/";
+    }
+    else n = siz - n;
+    for (esc.rain(" "+pwd); n < siz; n++) {
+        esc.rain(" "+parts[n]);
+    }
+}
+
+void checkBash() {
+    str env;
+    if (!strEnv(env, "SHELL")) {
+        exit(1);
+    }
+    int l = env.length();
+    if (l < 4 || env.substr(l - 4, 4) != "bash") {
+        exit(1);
+    }
 }
 
 
 int main(int argc,char** argv) {
+    checkBash();
+
     escape PS1;
     for (int i=1;i<argc;i++) {
         str arg = argv[i];
@@ -109,11 +138,10 @@ int main(int argc,char** argv) {
     str user=" ";
     const char* ipcol = getenv("IPCOLOR");
     if (ipcol == NULL || !(std::string(ipcol)=="none"||std::string(ipcol)=="NONE")) {
-        IP ip;
-        int ok = ip.get();
         user = envorcmd("USER", "whoami");
         user = " " + user + " ";
-        if (ok) PS1.output+=ip.toColor()+" ";
+        IP ip;
+        if (ip.get()) PS1.output+=ip.toColor()+" ";
     }
 
 
@@ -121,17 +149,7 @@ int main(int argc,char** argv) {
     PS1.rain(user);
     PS1.rain(std::to_string(lineno)+" ");
     PS1.rain(emote());
-    str pwd = getpwd();
-    if (pwd.back()=='/')pwd.pop_back();
-    std::vector<str> parts = split(pwd, '/');
-    str base="";
-    parts[0] = "/"+parts[0];
-    for (int i = 0; parts.size()!=0 && i<2; i++) {
-        base = " " + parts.back() + base;
-        parts.pop_back();
-    }
-    if (base.length()==0) base = "/";
-    PS1.rain(base);
+    getpwd(PS1);
     PS1.rain(" $ ");
     PS1.set();
 
