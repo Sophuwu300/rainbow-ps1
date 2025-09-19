@@ -29,7 +29,7 @@ sets the number of parents shown in PWD.
 .B IPCOLOR
 changes the color palette used for the IP address.
     If set to `alt`, it uses an alternative color palette.
-    If set to `none`, the IP address block and username will be removed from the prompt.
+    If set to `none`, the IP address block will be removed from the prompt.
     If unset or set to any other value, the default color palette will be used.
 .TP
 .B IPCmd
@@ -42,7 +42,19 @@ specifies a custom command to retrieve the current IP address.
 .B IPStr
 manually sets the IPv4 address to a specific value.
     If set, the IPCmd will not be executed, and the value of IPStr will be used instead.
-
+.TP
+.B RBPSFMT
+specifies a custom format for the rainbow prompt.
+    The format can include the following placeholders:
+    \fI%u\fR - the current user
+    \fI%h\fR - the machine hostname
+    \fI%i\fR - the current IP address (if available and not disabled)
+    \fI%d\fR - the current working directory, formatted according to PWDLEN
+    \fI%e\fR - a random emote (:D, :), :P, etc.)
+    \fI%?\fR - the exit status of the last command
+    \fI%l\fR - bash line number
+    If unset, it defaults to `%i %? %u %l %e %d`.
+    XTerm 256 colour values can be put after the `%` to set colors: \fI%fg.bg\fR
 .SH EXAMPLES
 .TP
 To enable the rainbow prompt, run:

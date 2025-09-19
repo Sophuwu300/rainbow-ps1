@@ -41,8 +41,31 @@ sudo install ./releaser/bash-rb-ps1.1 /usr/local/share/man/man1/bash-rb-ps1.1
 ## Options:
 Environment variables can be set to customize the prompt.
 
-* `IPCOLOR=alt` IP address will be colored with an alternate color palette.
-* `IPCOLOR=none` IP address and username will not be printed.
+### `IPCOLOR`
+* Controls how the IP address is printed.
+* `IPCOLOR=""` IP address will be colored with the default color palette.
+* `IPCOLOR="alt"` IP address will be colored with an alternate color palette.
+* `IPCOLOR="none"` IP address will not be printed.
+
+### `PWDLEN`
+* Controls the length of the printed working directory.
+* `PWDLEN=0` Full path.
+* `PWDLEN=1` Only the current directory.
+* `PWDLEN=2` Current directory and its parent.
+
+### `RBPSFMT`
+* Controls the format of the prompt.
+* Only valid format specifiers will be printed. Strings or invalid specifiers will be ignored.
+* Default: `"%i %? %u %l %e %d"`
+* Certain specifiers allow custom colours, to use them, put a number 0-255 after the `%` in the form `fg.bg` (`%32.240u`, `%.42l`, `%128d`).
+* Format specifiers:
+  * `%i` - IP address (4 blocks of color)
+  * `%?` - Exit code of last command
+  * `%u` - Username
+  * `%h` - Hostname
+  * `%l` - Line number
+  * `%e` - Random emote (:D, :P, etc.)
+  * `%d` - Current working directory (shortened according to `PWDLEN`)
 
 ## Preview
 

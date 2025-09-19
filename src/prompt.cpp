@@ -97,6 +97,7 @@ void getpwd(escape &esc) {
     for (esc.rain(" "+pwd); n < siz; n++) {
         esc.rain(" "+parts[n]);
     }
+    esc.output += " ";
 }
 
 void checkBash() {
@@ -110,6 +111,93 @@ void checkBash() {
     }
 }
 
+int validPart(char &part) {
+    const str parts = "i?uhlde";
+    for (int i = 0; i < parts.length(); i++) {
+        if (part == parts[i]) return 1;
+    }
+    return 0;
+}
+
+// return 1 on success, 0 on failure
+int parseFmtPart(str &fmt, int &i, char &part, str &fg, str &bg) {
+    if (i >= fmt.length() || fmt[i] != '%') return 0;
+    fg = "";
+    bg = "";
+    int v = 0;
+    str *col = &fg;
+    for (i++; i < fmt.length(); i++) {
+        part = fmt[i];
+        if (part == '.') {
+            if (col == &bg) return 0; // only one dot allowed
+            v = 0;
+            col = &bg;
+            continue;
+        }
+        if (part >= '0' && part <= '9') {
+            *col += part;
+            v = v * 10 + (int)(part - '0');
+            if (v > 255) return 0; // color out of range
+            continue;
+        }
+        return validPart(part);
+    }
+    return 0;
+}
+
+int doIP = 0;
+
+void addIP(escape &esc) {
+    if (!doIP) return;
+    IP ip;
+    if (ip.get()) esc.output+=ip.toColor()+" ";
+}
+
+int lineno ;
+
+void addPart(escape &esc, char &part, str &fg, str &bg) {
+    str s;
+    switch (part) {
+        case 'i':
+            addIP(esc);
+            return;
+        case 'd':
+            getpwd(esc);
+            return;
+        case '?':
+            if (fg == "" && bg == "") fg = "202";
+            s = "\\${?}";
+            break;
+        case 'u':
+            s = envorcmd("USER", "whoami");
+            break;
+        case 'h':
+            s = envorcmd("HOSTNAME", "hostname");
+            break;
+        case 'l':
+            s = std::to_string(lineno);
+            break;
+        case 'e':
+            s = emote();
+            break;
+        default:
+            return;
+    }
+    if (fg == "" && bg == "") esc.rain(s);
+    else esc.add(s, fg, bg);
+    esc.output += " ";
+}
+
+str getFMT() {
+    const char* ipcol = getenv("IPCOLOR");
+    if (ipcol == NULL || !(std::string(ipcol)=="none"||std::string(ipcol)=="NONE")) doIP = 1;
+    const char* fmtt = getenv("RBPSFMT");
+    if (fmtt == NULL) {
+        if (doIP) return "%i%?%u%l%e%d";
+        return "%?%u%h%l%e%d";
+    }
+    return std::string(fmtt);
+}
 
 int main(int argc,char** argv) {
     checkBash();
@@ -131,26 +219,21 @@ int main(int argc,char** argv) {
             return 0;
         }
     }
-    int lineno = intenv("LINENO");
+    lineno = intenv("LINENO");
     if (lineno == 0)printf("%s\n","export LINENO");
     PS1.r = rain(lineno);
 
-    str user=" ";
-    const char* ipcol = getenv("IPCOLOR");
-    if (ipcol == NULL || !(std::string(ipcol)=="none"||std::string(ipcol)=="NONE")) {
-        user = envorcmd("USER", "whoami");
-        user = " " + user + " ";
-        IP ip;
-        if (ip.get()) PS1.output+=ip.toColor()+" ";
+    str fmt = getFMT();
+
+    char part;
+    str fg, bg;
+    for (int i = 0; i < fmt.length();i++) {
+        part = fmt[i];
+        if (parseFmtPart(fmt, i, part, fg, bg))
+            addPart(PS1, part, fg, bg);
     }
-
-
-    PS1.add("\\${?}", "202");
-    PS1.rain(user);
-    PS1.rain(std::to_string(lineno)+" ");
-    PS1.rain(emote());
-    getpwd(PS1);
-    PS1.rain(" $ ");
+    PS1.rain("$");
+    PS1.output += " ";
     PS1.set();
 
     return 0;
